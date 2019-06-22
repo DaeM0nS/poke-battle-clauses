@@ -95,12 +95,12 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
                     BLACK -> pokeInList
                 }
             }
-            debug("Pokemon '${pokemon.species.unlocalizedName}' allowed: $pokeAllowed")
+            debug("Pokemon '${pokemon.species.localizedName}' allowed: $pokeAllowed")
             return@let pokeAllowed
         } ?: true
         debug("--> Pokemon check passed: $pokeCheckPassed")
 
-        val result = pokeCheckPassed /*&& pokemonCheckPassed */&& typeCheckPassed && movesCheckPassed && abilitiesCheckPassed && itemsCheckPassed && levelsCheckPassed && legendaryCheckPassed
+        val result = pokeCheckPassed && typeCheckPassed && movesCheckPassed && abilitiesCheckPassed && itemsCheckPassed && levelsCheckPassed && legendaryCheckPassed
 
         debug("==> This pokemon is allowed: $result")
 
