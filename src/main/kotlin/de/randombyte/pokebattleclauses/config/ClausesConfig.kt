@@ -4,6 +4,7 @@ import com.pixelmonmod.pixelmon.battles.attacks.Attack
 import com.pixelmonmod.pixelmon.battles.attacks.AttackBase
 import com.pixelmonmod.pixelmon.entities.pixelmon.abilities.AbilityBase
 import com.pixelmonmod.pixelmon.enums.EnumType
+import com.pixelmonmod.pixelmon.enums.EnumSpecies
 import com.pixelmonmod.pixelmon.items.ItemHeld
 import com.pixelmonmod.pixelmon.items.heldItems.NoItem
 import de.randombyte.kosp.extensions.orNull
@@ -45,7 +46,11 @@ import org.spongepowered.api.item.inventory.ItemStack
                                     listType = WHITE,
                                     list = listOf("1-20", "44", "60-63")
                             ),
-                            legendary = false
+                            legendary = false,
+                            pokemons = BlackWhiteList(
+                                    listType = BLACK,
+                                    list = listOf("Arceus","Bidoof", "Pikachu")
+                            )
                     )
             )
     )
@@ -61,7 +66,8 @@ import org.spongepowered.api.item.inventory.ItemStack
             @Setting("abilities") val abilities: BlackWhiteList<Class<out AbilityBase>>? = null,
             @Setting("items") val items: BlackWhiteList<Class<out ItemHeld>>? = null,
             @Setting("levels") val levels: BlackWhiteList<IntRange>? = null,
-            @Setting("legendary") val legendary: Boolean? = null
+            @Setting("legendary") val legendary: Boolean? = null,
+            @Setting("pokemons") val pokemons: BlackWhiteList<EnumSpecies>? = null
     ) {
 
         /**
@@ -129,6 +135,16 @@ import org.spongepowered.api.item.inventory.ItemStack
                     } else number
                 }
                 numbers[0]..numbers[if (numbers.size == 2) 1 else 0]
+            }
+            
+            pokemons?.parseTypeValues { pokemonName ->
+                val pokemon = EnumSpecies.getNameList().singleOrNull { it==pokemonName }
+                if (pokemon == null) {
+                    logger.error("Could not find Pokemon '$pokemonName'")
+                    return false
+                }
+
+                return@parseTypeValues EnumSpecies.valueOf(pokemonName)
             }
 
             return true
