@@ -144,7 +144,7 @@ import org.spongepowered.api.item.inventory.ItemStack
                     return false
                 }
 
-                return@parseTypeValues EnumSpecies.valueOf(pokemonName)
+                return@parseTypeValues EnumSpecies.valueOf(pokemonName.replace(" ", "").replace(".", "").replace("-", ""))
             }
 
             return true
