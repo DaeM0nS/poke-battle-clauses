@@ -5,6 +5,7 @@ import com.pixelmonmod.pixelmon.battles.attacks.Attack
 import com.pixelmonmod.pixelmon.battles.rules.clauses.BattleClause
 import com.pixelmonmod.pixelmon.enums.EnumSpecies
 import com.pixelmonmod.pixelmon.enums.EnumType
+import com.pixelmonmod.pixelmon.enums.forms.EnumNoForm
 import de.randombyte.pokebattleclauses.config.ClausesConfig.ClauseConfig
 import de.randombyte.pokebattleclauses.config.ListType.BLACK
 import de.randombyte.pokebattleclauses.config.ListType.WHITE
@@ -14,7 +15,20 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
     init {
         description = clauseConfig.description
     }
-
+    private fun getSelf(pokemonName: String): EnumSpecies {
+        if(pokemonName.contains("Tapu")){
+            val pokemon=pokemonName.replace("Tapu", "Tapu_")
+            if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
+                return EnumSpecies.valueOf(pokemon)
+            }
+        }else{
+            val pokemon=pokemonName.replace(" ", "").replace(".", "").replace("-", "")
+            if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
+                return EnumSpecies.valueOf(pokemon)
+            }
+        }
+        return EnumSpecies.Bulbasaur
+    }
     override fun validateSingle(pokemon: Pokemon): Boolean {
 
         val debugEnabled = PokeBattleClauses.INSTANCE.configAccessors.general.get().debug
@@ -91,18 +105,36 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
         } ?: true
         debug("--> Legendary check passed: $legendaryCheckPassed")
 
+
+
         val pokeCheckPassed = clauseConfig.pokemons?.let { pokeConfig ->
-            var pokeAllowed = false
-            if (pokeConfig.ensureInitialization()) {
-                val pokeInList = pokeConfig.listValues!!.any { poke -> pokemon.species == poke }
-                pokeAllowed = when (pokeConfig.listType) {
-                    WHITE -> pokeInList
-                    BLACK -> !pokeInList
+            if(pokemon.formEnum.formSuffix=="" || pokemon.formEnum==EnumNoForm.NoForm  || pokemon.form==0 || pokemon.form==-1){
+                var pokeAllowed = false
+                if (pokeConfig.ensureInitialization()) {
+                    val pokeInList = pokeConfig.listValues!!.any { poke -> pokemon.species == getSelf(poke)}
+                    pokeAllowed = when (pokeConfig.listType) {
+                        WHITE -> pokeInList
+                        BLACK -> !pokeInList
+                    }
                 }
+                debug("Pokemon '${pokemon.species.localizedName }' allowed: $pokeAllowed")
+                return@let pokeAllowed
+            }else{
+                val base = pokemon.species.pokemonName
+                val form = pokemon.formEnum.formSuffix
+
+                var pokeAllowed = false
+                if (pokeConfig.ensureInitialization()) {
+                    val pokeInList = pokeConfig.listValues!!.any { poke -> "$base$form" == poke }
+                    pokeAllowed = when (pokeConfig.listType) {
+                        WHITE -> pokeInList
+                        BLACK -> !pokeInList
+                    }
+                }
+                debug("Pokemon '$base$form' allowed: $pokeAllowed")
+                return@let pokeAllowed
             }
-            debug("Pokemon '${pokemon.species.localizedName }' allowed: $pokeAllowed")
-            return@let pokeAllowed
-        } ?: true
+        } != false
         debug("--> Pokemon check passed: $pokeCheckPassed")
 
         val result = pokeCheckPassed && typeCheckPassed && movesCheckPassed && abilitiesCheckPassed && itemsCheckPassed && levelsCheckPassed && legendaryCheckPassed

@@ -11,12 +11,17 @@ import de.randombyte.kosp.extensions.orNull
 import de.randombyte.pokebattleclauses.PokeBattleClauses
 import de.randombyte.pokebattleclauses.config.ListType.BLACK
 import de.randombyte.pokebattleclauses.config.ListType.WHITE
+import net.minecraft.item.Item
 import net.minecraftforge.fml.common.FMLCommonHandler
+import net.minecraftforge.registries.IForgeRegistryEntry
 import ninja.leaping.configurate.objectmapping.Setting
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.item.ItemType
 import org.spongepowered.api.item.inventory.ItemStack
+import net.minecraft.item.Item.getByNameOrId
+
+
 
 @ConfigSerializable class ClausesConfig(
         @Setting("clauses") val clauses: Map<String, ClauseConfig> = emptyMap()
@@ -68,23 +73,9 @@ import org.spongepowered.api.item.inventory.ItemStack
             @Setting("items") val items: BlackWhiteList<String>? = null,
             @Setting("levels") val levels: BlackWhiteList<IntRange>? = null,
             @Setting("legendary") val legendary: Boolean? = null,
-            @Setting("pokemons") val pokemons: BlackWhiteList<EnumSpecies>? = null
+            @Setting("pokemons") val pokemons: BlackWhiteList<String>? = null
     ) {
 
-        private fun getSelf(pokemonName: String): EnumSpecies {
-            if(pokemonName.contains("Tapu")){
-                val pokemon=pokemonName.replace("Tapu", "Tapu_")
-                if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
-                    return EnumSpecies.valueOf(pokemon)
-                }
-            }else{
-                val pokemon=pokemonName.replace(" ", "").replace(".", "").replace("-", "")
-                if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
-                    return EnumSpecies.valueOf(pokemon)
-                }
-            }
-            return EnumSpecies.Bulbasaur
-        }
         /**
          * Must be called after loading the config
          *
@@ -124,12 +115,16 @@ import org.spongepowered.api.item.inventory.ItemStack
             }
 
             items?.parseTypeValues { itemName ->
-                if (itemName == null) {
-                    logger.error("Could not find '$itemName' item")
-                    return false
+                try{
+                    val item = Item.getByNameOrId(itemName)
+                    if (item == null) {
+                        logger.error("Could not find '$itemName' item")
+                        return false
+                    }
+                    return@parseTypeValues itemName
+                }catch(e: NullPointerException ){
+                    return@parseTypeValues "minecraft:dirt"
                 }
-
-                return@parseTypeValues itemName
             }
 
             levels?.parseTypeValues { levelRangeString ->
@@ -145,15 +140,24 @@ import org.spongepowered.api.item.inventory.ItemStack
             }
             
             pokemons?.parseTypeValues { pokemonName ->
+                if(pokemonName=="Ho-Oh" || pokemonName=="Porygon-Z" || pokemonName=="Jangmo-o" || pokemonName=="Hakamo-o" || pokemonName=="Kommo-o"){
                     val pokemon = EnumSpecies.getNameList().singleOrNull { it==pokemonName }
                     if (pokemon == null) {
                         logger.error("Could not find Pokemon '$pokemonName'")
                         return false
+                    }
+
+                    return@parseTypeValues pokemonName
+                }else{
+                    val pokemon = EnumSpecies.getNameList().singleOrNull { it==pokemonName.split("-")[0] }
+                    if (pokemon == null) {
+                        logger.error("Could not find Pokemon '$pokemonName'")
+                        return false
+                    }
+
+                    return@parseTypeValues pokemonName
                 }
-
-                return@parseTypeValues getSelf(pokemonName)
             }
-
             return true
         }
     }

@@ -35,7 +35,7 @@ class PokeBattleClauses @Inject constructor(
     internal companion object {
         const val ID = "poke-battle-clauses"
         const val NAME = "PokeBattleClauses"
-        const val VERSION = "1.3.1"
+        const val VERSION = "1.3.2"
         const val AUTHOR = "RandomByte, DaeM0nS"
 
         private val _INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as PokeBattleClauses }
@@ -105,7 +105,6 @@ class PokeBattleClauses @Inject constructor(
             logger.error("The following clause ID(s) are already in use: ${alreadyUsedIds.joinToString()}")
             return
         }
-
         clausesConfig.forEach { (id, clauseConfig) ->
             registry.registerCustomClause(VariableClause(id, clauseConfig))
         }
