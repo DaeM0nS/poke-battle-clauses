@@ -70,6 +70,13 @@ import org.spongepowered.api.item.inventory.ItemStack
             @Setting("pokemons") val pokemons: BlackWhiteList<EnumSpecies>? = null
     ) {
 
+        private fun getSelf(pokemonName: String): EnumSpecies {
+            val pokemon=pokemonName.replace(" ", "").replace(".", "").replace("-", "");
+            if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
+                return EnumSpecies.valueOf(pokemon)
+            }
+            return EnumSpecies.Bulbasaur
+        }
         /**
          * Must be called after loading the config
          *
@@ -144,7 +151,8 @@ import org.spongepowered.api.item.inventory.ItemStack
                     return false
                 }
 
-                return@parseTypeValues EnumSpecies.valueOf(pokemonName.replace(" ", "").replace(".", "").replace("-", ""))
+
+                return@parseTypeValues getSelf(pokemonName)
             }
 
             return true
