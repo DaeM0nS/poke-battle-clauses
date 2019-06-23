@@ -60,9 +60,14 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
         debug("--> Abilities check passed: $abilitiesCheckPassed")
 
         val itemsCheckPassed = clauseConfig.items?.let { itemConfig ->
-            val heldItemClass = pokemon.heldItemAsItemHeld::class.java
-            val itemAllowed = itemConfig.isAllowed(heldItemClass)
-            debug("Item '${heldItemClass.simpleName}' allowed: $itemAllowed")
+            val heldItem = pokemon.heldItem.item.registryName
+            if(heldItem.toString()=="minecraft:air"){
+                val itemAllowed = true
+                debug("Item '$heldItem' allowed: $itemAllowed")
+                return@let itemAllowed
+            }
+            val itemAllowed = itemConfig.isAllowed(heldItem.toString())
+            debug("Item '$heldItem' allowed: $itemAllowed")
             return@let itemAllowed
         } ?: true
         debug("--> Items check passed: $itemsCheckPassed")
@@ -91,11 +96,11 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
             if (pokeConfig.ensureInitialization()) {
                 val pokeInList = pokeConfig.listValues!!.any { poke -> pokemon.species == poke }
                 pokeAllowed = when (pokeConfig.listType) {
-                    WHITE -> !pokeInList
-                    BLACK -> pokeInList
+                    WHITE -> pokeInList
+                    BLACK -> !pokeInList
                 }
             }
-            debug("Pokemon '${pokemon.species.localizedName}' allowed: $pokeAllowed")
+            debug("Pokemon '${pokemon.species.localizedName }' allowed: $pokeAllowed")
             return@let pokeAllowed
         } ?: true
         debug("--> Pokemon check passed: $pokeCheckPassed")

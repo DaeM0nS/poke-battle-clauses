@@ -11,6 +11,7 @@ import de.randombyte.kosp.extensions.orNull
 import de.randombyte.pokebattleclauses.PokeBattleClauses
 import de.randombyte.pokebattleclauses.config.ListType.BLACK
 import de.randombyte.pokebattleclauses.config.ListType.WHITE
+import net.minecraftforge.fml.common.FMLCommonHandler
 import ninja.leaping.configurate.objectmapping.Setting
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable
 import org.spongepowered.api.Sponge
@@ -64,16 +65,23 @@ import org.spongepowered.api.item.inventory.ItemStack
             @Setting("types") val types: BlackWhiteList<EnumType>? = null,
             @Setting("moves") val moves: BlackWhiteList<Attack>? = null,
             @Setting("abilities") val abilities: BlackWhiteList<Class<out AbilityBase>>? = null,
-            @Setting("items") val items: BlackWhiteList<Class<out ItemHeld>>? = null,
+            @Setting("items") val items: BlackWhiteList<String>? = null,
             @Setting("levels") val levels: BlackWhiteList<IntRange>? = null,
             @Setting("legendary") val legendary: Boolean? = null,
             @Setting("pokemons") val pokemons: BlackWhiteList<EnumSpecies>? = null
     ) {
 
         private fun getSelf(pokemonName: String): EnumSpecies {
-            val pokemon=pokemonName.replace(" ", "").replace(".", "").replace("-", "");
-            if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
-                return EnumSpecies.valueOf(pokemon)
+            if(pokemonName.contains("Tapu")){
+                val pokemon=pokemonName.replace("Tapu", "Tapu_")
+                if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
+                    return EnumSpecies.valueOf(pokemon)
+                }
+            }else{
+                val pokemon=pokemonName.replace(" ", "").replace(".", "").replace("-", "")
+                if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
+                    return EnumSpecies.valueOf(pokemon)
+                }
             }
             return EnumSpecies.Bulbasaur
         }
@@ -116,20 +124,12 @@ import org.spongepowered.api.item.inventory.ItemStack
             }
 
             items?.parseTypeValues { itemName ->
-                val itemType = Sponge.getRegistry().getType(ItemType::class.java, itemName).orNull()
-                if (itemType == null) {
-                    logger.error("Could not find item type '$itemName'!")
+                if (itemName == null) {
+                    logger.error("Could not find '$itemName' item")
                     return false
                 }
 
-                val itemStack = ItemStack.of(itemType, 1)
-                val pixelmonItemHeld = ItemHeld.getItemHeld(itemStack as net.minecraft.item.ItemStack)
-                if (pixelmonItemHeld == NoItem.noItem) {
-                    logger.error("'$itemName' is not a pixelmon held item!")
-                    return false
-                }
-
-                return@parseTypeValues pixelmonItemHeld::class.java
+                return@parseTypeValues itemName
             }
 
             levels?.parseTypeValues { levelRangeString ->
@@ -145,12 +145,11 @@ import org.spongepowered.api.item.inventory.ItemStack
             }
             
             pokemons?.parseTypeValues { pokemonName ->
-                val pokemon = EnumSpecies.getNameList().singleOrNull { it==pokemonName }
-                if (pokemon == null) {
-                    logger.error("Could not find Pokemon '$pokemonName'")
-                    return false
+                    val pokemon = EnumSpecies.getNameList().singleOrNull { it==pokemonName }
+                    if (pokemon == null) {
+                        logger.error("Could not find Pokemon '$pokemonName'")
+                        return false
                 }
-
 
                 return@parseTypeValues getSelf(pokemonName)
             }
