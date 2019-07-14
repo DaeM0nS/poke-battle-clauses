@@ -35,7 +35,7 @@ class PokeBattleClauses @Inject constructor(
     internal companion object {
         const val ID = "poke-battle-clauses"
         const val NAME = "PokeBattleClauses"
-        const val VERSION = "1.3.2"
+        const val VERSION = "1.4.0"
         const val AUTHOR = "RandomByte, DaeM0nS"
 
         private val _INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as PokeBattleClauses }

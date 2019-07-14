@@ -2,7 +2,9 @@ package de.randombyte.pokebattleclauses.config
 
 import com.pixelmonmod.pixelmon.battles.attacks.Attack
 import com.pixelmonmod.pixelmon.battles.attacks.AttackBase
+import com.pixelmonmod.pixelmon.client.gui.GuiResources.types
 import com.pixelmonmod.pixelmon.entities.pixelmon.abilities.AbilityBase
+import com.pixelmonmod.pixelmon.entities.pixelmon.stats.Gender
 import com.pixelmonmod.pixelmon.enums.EnumType
 import com.pixelmonmod.pixelmon.enums.EnumSpecies
 import com.pixelmonmod.pixelmon.items.ItemHeld
@@ -55,7 +57,11 @@ import net.minecraft.item.Item.getByNameOrId
                             legendary = false,
                             pokemons = BlackWhiteList(
                                     listType = BLACK,
-                                    list = listOf("Arceus","Bidoof", "Pikachu")
+                                    list = listOf("Arceus","Bidoof", "Pikachu", "Floette-az")
+                            ),
+                            gender = BlackWhiteList(
+                                    listType = WHITE,
+                            list = listOf("Male", "Female", "None")
                             )
                     )
             )
@@ -73,7 +79,8 @@ import net.minecraft.item.Item.getByNameOrId
             @Setting("items") val items: BlackWhiteList<String>? = null,
             @Setting("levels") val levels: BlackWhiteList<IntRange>? = null,
             @Setting("legendary") val legendary: Boolean? = null,
-            @Setting("pokemons") val pokemons: BlackWhiteList<String>? = null
+            @Setting("pokemons") val pokemons: BlackWhiteList<String>? = null,
+            @Setting("gender") val gender: BlackWhiteList<Gender>? = null
     ) {
 
         /**
@@ -156,6 +163,19 @@ import net.minecraft.item.Item.getByNameOrId
                     }
 
                     return@parseTypeValues pokemonName
+                }
+            }
+
+            gender?.parseTypeValues { genderValue ->
+                try{
+                    val pokeGender = Gender.getGender(genderValue)
+                    if (pokeGender == null) {
+                        logger.error("Could not find gender '$genderValue'!")
+                        return false
+                    }
+                    return@parseTypeValues pokeGender
+                }catch(e: NullPointerException){
+                    return@parseTypeValues Gender.None
                 }
             }
             return true

@@ -15,20 +15,7 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
     init {
         description = clauseConfig.description
     }
-    private fun getSelf(pokemonName: String): EnumSpecies {
-        if(pokemonName.contains("Tapu")){
-            val pokemon=pokemonName.replace("Tapu", "Tapu_")
-            if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
-                return EnumSpecies.valueOf(pokemon)
-            }
-        }else{
-            val pokemon=pokemonName.replace(" ", "").replace(".", "").replace("-", "")
-            if(EnumSpecies.hasPokemonAnyCase(pokemon)) {
-                return EnumSpecies.valueOf(pokemon)
-            }
-        }
-        return EnumSpecies.Bulbasaur
-    }
+
     override fun validateSingle(pokemon: Pokemon): Boolean {
 
         val debugEnabled = PokeBattleClauses.INSTANCE.configAccessors.general.get().debug
@@ -111,7 +98,7 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
             if(pokemon.formEnum.formSuffix=="" || pokemon.formEnum==EnumNoForm.NoForm  || pokemon.form==0 || pokemon.form==-1){
                 var pokeAllowed = false
                 if (pokeConfig.ensureInitialization()) {
-                    val pokeInList = pokeConfig.listValues!!.any { poke -> pokemon.species == getSelf(poke)}
+                    val pokeInList = pokeConfig.listValues!!.any { poke -> pokemon.species.localizedName.replace(" ","") == poke}
                     pokeAllowed = when (pokeConfig.listType) {
                         WHITE -> pokeInList
                         BLACK -> !pokeInList
@@ -137,7 +124,15 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
         } != false
         debug("--> Pokemon check passed: $pokeCheckPassed")
 
-        val result = pokeCheckPassed && typeCheckPassed && movesCheckPassed && abilitiesCheckPassed && itemsCheckPassed && levelsCheckPassed && legendaryCheckPassed
+        val genderCheckPassed = clauseConfig.gender?.let { genderConfig ->
+            val gender = pokemon.gender
+            val genderAllowed = genderConfig.isAllowed(gender)
+            debug("Gender '${gender.name}' allowed: $genderAllowed")
+            return@let genderAllowed
+        } ?: true
+        debug("--> gender check passed: $genderCheckPassed")
+
+        val result = genderCheckPassed && pokeCheckPassed && typeCheckPassed && movesCheckPassed && abilitiesCheckPassed && itemsCheckPassed && levelsCheckPassed && legendaryCheckPassed
 
         debug("==> This pokemon is allowed: $result")
 
