@@ -59,7 +59,7 @@ import net.minecraft.item.Item.getByNameOrId
                                     listType = BLACK,
                                     list = listOf("Arceus","Bidoof", "Pikachu", "Floette-az")
                             ),
-                            gender = BlackWhiteList(
+                            genders = BlackWhiteList(
                                     listType = WHITE,
                             list = listOf("Male", "Female", "None")
                             )
@@ -80,7 +80,7 @@ import net.minecraft.item.Item.getByNameOrId
             @Setting("levels") val levels: BlackWhiteList<IntRange>? = null,
             @Setting("legendary") val legendary: Boolean? = null,
             @Setting("pokemons") val pokemons: BlackWhiteList<String>? = null,
-            @Setting("gender") val gender: BlackWhiteList<Gender>? = null
+            @Setting("gender") val genders: BlackWhiteList<Gender>? = null
     ) {
 
         /**
@@ -166,7 +166,7 @@ import net.minecraft.item.Item.getByNameOrId
                 }
             }
 
-            gender?.parseTypeValues { genderValue ->
+            genders?.parseTypeValues { genderValue ->
                 try{
                     val pokeGender = Gender.getGender(genderValue)
                     if (pokeGender == null) {

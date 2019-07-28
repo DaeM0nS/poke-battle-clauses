@@ -124,7 +124,7 @@ class VariableClause(id: String, val clauseConfig: ClauseConfig) : BattleClause(
         } != false
         debug("--> Pokemon check passed: $pokeCheckPassed")
 
-        val genderCheckPassed = clauseConfig.gender?.let { genderConfig ->
+        val genderCheckPassed = clauseConfig.genders?.let { genderConfig ->
             val gender = pokemon.gender
             val genderAllowed = genderConfig.isAllowed(gender)
             debug("Gender '${gender.name}' allowed: $genderAllowed")

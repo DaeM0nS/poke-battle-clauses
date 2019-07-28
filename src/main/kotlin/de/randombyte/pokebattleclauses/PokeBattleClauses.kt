@@ -1,6 +1,7 @@
 package de.randombyte.pokebattleclauses
 
 import com.google.inject.Inject
+import com.pixelmonmod.pixelmon.Pixelmon
 import com.pixelmonmod.pixelmon.battles.rules.clauses.BattleClause
 import com.pixelmonmod.pixelmon.battles.rules.clauses.BattleClauseRegistry
 import de.randombyte.kosp.extensions.*
@@ -35,7 +36,7 @@ class PokeBattleClauses @Inject constructor(
     internal companion object {
         const val ID = "poke-battle-clauses"
         const val NAME = "PokeBattleClauses"
-        const val VERSION = "1.4.0"
+        const val VERSION = "1.5.0"
         const val AUTHOR = "RandomByte, DaeM0nS"
 
         private val _INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as PokeBattleClauses }
@@ -94,6 +95,8 @@ class PokeBattleClauses @Inject constructor(
     private fun unregisterOurClauses() {
         val ourClauseIds = configAccessors.clauses.get().clauses.keys
         val notOurClauses = registry.customClauses.filterNot { it.id in ourClauseIds }
+        Pixelmon.storageManager.getPCForPlayer(UUID.nameUUIDFromBytes(("test").toByteArray(Charsets.UTF_8))).
+
         registry.replaceCustomClauses(notOurClauses)
     }
 
